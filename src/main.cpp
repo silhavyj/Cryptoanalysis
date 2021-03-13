@@ -6,6 +6,8 @@
 #include "cxxopts.hpp"
 #include "data.h"
 
+#define VIGENER_PEEK_CONSTANT 20
+
 cxxopts::ParseResult arg;
 cxxopts::Options options("cryptoanalysis", "KIV/BIT task 2 - program for breaking substitution ciphers");
 std::unordered_set<std::string> dictionary;
@@ -129,7 +131,6 @@ void crackVigenere(const std::string &cipherText, const std::vector<std::string>
         maxScore = score;
         solution = plain;
     }
-
     std::cout << "vigenere cipher (key length: " << keyLen << "): "; 
     std::cout << "guessed key: '" << key << "', ";
     std::cout << "score: " << score << ", ";
@@ -161,7 +162,7 @@ void crackVigenere(std::vector<std::string> &cipher) {
 
         std::vector<std::pair<int, int>> peeks;
         for (int i = 0; i < (int)coincidences.size(); i++)
-            if (coincidences[i] >= (int)text.size() / 30)
+            if (coincidences[i] >= (int)text.size() / VIGENER_PEEK_CONSTANT)
                 peeks.push_back({coincidences[i], i});
         
         std::unordered_map<int, int> peekDistances;
@@ -190,8 +191,10 @@ void crack(std::vector<std::string> &cipher) {
     static int counter = 1;
     std::cout << "starting cracking " << counter << ". cipher...\n";
     counter++;
-    maxScore = 0;
-    solution.clear();
+
+    maxScore = evaluate(cipher);
+    solution = cipher;
+    std::cout << "the given text scores: " << maxScore << " and contains " << (evaluateEnglishText(cipher, false) * 100) << "% dictionary words\n";
 
     crackVigenere(cipher);
 
@@ -262,6 +265,8 @@ int main(int argc, char **argv) {
         if (c == '\n' || c == '\r')
             continue;
         if (c == CIPHER_SEPARATOR) {
+            if (word != " " && word != "")
+                cipher.push_back(word);
             crack(cipher);
             cipher.clear();
             word = "";
