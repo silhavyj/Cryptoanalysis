@@ -55,33 +55,13 @@ int numberOfOccurrences(std::string txt, std::string pattern) {
     return occurrences;
 }
 
-double evaluateNGramFrequency(std::vector<std::string> &text) {
-    std::string txt = "";
-    for (std::string word : text)
-        txt += word;
-    
-    double score1 = 0;
-    for (int i = 0; i < (int)trigrams.size(); i++) {
-        double freq = (double)numberOfOccurrences(txt, trigrams[i]) / txt.length()  / 3;
-        score1 += trigramsFrequencies[i] * freq;
-    }
-
-    double score2 = 0;
-    for (int i = 0; i < (int)bigrams.size(); i++) {
-        double freq = (double)numberOfOccurrences(txt, bigrams[i]) / txt.length()  / 2;
-        score2 += bigramsFrequencies[i] * freq;
-    }
-    return score1 * score2;
-}
-
 double evaluate(std::vector<std::string> &text) {
     double p2 = evaluateLetterFrequency(text);
-    double p3 = evaluateNGramFrequency(text);
     if (arg.count("dictionary")) {
         double p1 = evaluateEnglishText(text, false);
-        return p1 * p2 * p3 * 1e10;
+        return p1 * p2 * 1e3;
     }
-    return p2 * p3 * 1e10;
+    return p2 * 1e2;
 }
 
 void crackVigenere(const std::string &cipherText, const std::vector<std::string> &cipher, uint32_t keyLen) {
@@ -302,7 +282,8 @@ void crackMonoAlphabetic(std::vector<std::string> &cipher) {
             bestScore = scrambled.second;
             bestKey = scrambled.first;
         }
-        std::cout << "DONE\n";
+        std::cout << "DONE ";
+        std::cout << "best key so far: '" << bestKey << "'\n";
     }
     monoAlphaKey = bestKey;
 
@@ -349,7 +330,7 @@ void crack(std::vector<std::string> &cipher) {
 
     std::cout << "------------------------------------------------------\n";
     std::cout << "the best guess " << (evaluateEnglishText(solution, false) * 100) << "% dictionary words\n";
-    std::cout << "guessed key: "   << solutionKey << "\n";
+    std::cout << "guessed key: '"   << solutionKey << "'\n";
     std::cout << "------------------------------------------------------\n";
 
     std::ofstream out(arg["output"].as<std::string>(), std::ios::app);
