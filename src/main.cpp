@@ -9,7 +9,7 @@
 #define VIGENER_PEEK_CONSTANT 20
 
 cxxopts::ParseResult arg;
-cxxopts::Options options("cryptoanalysis", "KIV/BIT task 2 - program for breaking substitution ciphers");
+cxxopts::Options options("./cryptoanalysis <file>", "KIV/BIT task 2 - program for breaking substitution ciphers");
 std::unordered_set<std::string> dictionary;
 
 std::string outputFile;
@@ -217,13 +217,13 @@ int main(int argc, char **argv) {
         ("h,help", "print help")
     ;
     if (argc < 2) {
-        std::cout << "ERR: input file not specified!\n";
+        std::cout << "ERR: input file not specified! The first parameter must be the file\nwith ciphers split up by '#'\n";
         std::cout << options.help() << std::endl;
         return 1;
     }
     std::string cipherFile(argv[1]);
-    argv++;
-    argc--;
+   // argv++;
+   // argc--;
 
     arg = options.parse(argc, argv);
     if (arg.count("help")) {
@@ -237,7 +237,6 @@ int main(int argc, char **argv) {
         inputFile = std::ifstream(dictionaryFile);
         if (!inputFile) {
             std::cout << "ERR: dictionary file not found!\n";
-            std::cout << options.help() << std::endl;
             return 1;
         }
         std::string word;
@@ -251,7 +250,6 @@ int main(int argc, char **argv) {
     inputFile = std::ifstream(cipherFile);
     if (!inputFile) {
         std::cout << "ERR: input file not found!\n";
-        std::cout << options.help() << std::endl;
         return 1;
     }
 
