@@ -1,5 +1,5 @@
 
-# KIV/BIT task 02 - Cryptoanalysis !
+# KIV/BIT task 02 - Cryptoanalysis
 
 # manual
 
@@ -64,3 +64,17 @@ cracked cipher 2
 cracked cipher 3
 #
 ```
+## Testing
+The default `cipher.txt` file contains scrambled text encrypted by the following techniques:
+
+* ROT13
+* Mono-alphabetic substitution cipher (key=portugesmnfwaihydcblvkzxqj)
+* Vigenere cipher (key=biden)
+* English plain text (the output should be the same as there is no encryption technique used)
+* Vigenere cipher (key=trytofindmeimwellhiden)
+* Caesar cipher (shift=20)
+
+## frequency analysis
+The program takes advantage of the ROT13 being a variant of the Caesar cipher and the Caesar cipher being a special of the Vigenere cipher. Therefore, the program treats all of these ciphers as the Vigenere cipher.
+
+### Cracking the Vigenere cipher
