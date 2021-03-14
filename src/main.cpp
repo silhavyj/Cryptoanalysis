@@ -6,8 +6,6 @@
 #include "cxxopts.hpp"
 #include "data.h"
 
-#define VIGENER_PEEK_CONSTANT 20
-
 cxxopts::ParseResult arg;
 cxxopts::Options options("./cryptoanalysis <file>", "KIV/BIT task 2 - program for breaking substitution ciphers");
 std::unordered_set<std::string> dictionary;
@@ -222,7 +220,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     std::string cipherFile(argv[1]);
-    
+
     arg = options.parse(argc, argv);
     if (arg.count("help")) {
         std::cout << options.help() << std::endl;
@@ -253,28 +251,16 @@ int main(int argc, char **argv) {
 
     outputFile = arg["output"].as<std::string>();
 
-    char c;
     std::string word = "";
     std::vector<std::string> cipher;
 
-    while (inputFile.get(c)) {
-        if (c == '\n' || c == '\r')
-            continue;
-        if (c == CIPHER_SEPARATOR) {
-            if (word != " " && word != "")
-                cipher.push_back(word);
+    while (inputFile >> word) {
+        if (word == CIPHER_SEPARATOR) {
             crack(cipher);
             cipher.clear();
-            word = "";
             continue;
         }
-        if (isspace(c)) {
-            if (word != " " && word != "")
-                cipher.push_back(word);
-            word = "";
-        } else {
-            word += c;
-        }
+        cipher.push_back(word);
     }
     if (!cipher.empty())
          crack(cipher);

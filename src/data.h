@@ -3,8 +3,9 @@
 
 #include <vector>
 
-#define CIPHER_SEPARATOR '#'
+#define CIPHER_SEPARATOR "#"
 #define ALPHABET_SIZE 26
+#define VIGENER_PEEK_CONSTANT 20
 
 static const double lettersFrequencies_EN[ALPHABET_SIZE] = {
     0.08167, 0.01492, 0.02782, 0.04253, 
@@ -47,8 +48,5 @@ static const std::vector<double> bigramsFrequencies = {
     0.01275, 0.01170, 0.01151, 0.01135,
     0.01110, 0.01092, 0.01092, 0.01053
 };
-
-// of, to, in, it, is, be, as, at, so, we, he, by, or, on, do, if, me, my, up, an, go, no, us, am.
-// the, and, for, are, but, not, you, all, any, can, had, her, was, one, our, out, day, get, has, him, his, how, man, new, now, old, see, two, way, who, boy, did, its, let, put, say, she, too, use
 
 #endif
