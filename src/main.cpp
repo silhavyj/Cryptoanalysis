@@ -44,17 +44,6 @@ double evaluateLetterFrequency(std::vector<std::string> &text) {
     return score;
 }
 
-int numberOfOccurrences(std::string txt, std::string pattern) {
-    int occurrences = 0;
-    std::string::size_type pos = 0;
-
-    while ((pos = txt.find(pattern, pos)) != std::string::npos) {
-        ++ occurrences;
-        pos += pattern.length();
-    }
-    return occurrences;
-}
-
 double evaluate(std::vector<std::string> &text) {
     double p2 = evaluateLetterFrequency(text);
     if (arg.count("dictionary")) {
@@ -356,7 +345,7 @@ int main(int argc, char **argv) {
         ("d,dictionary", "text file containing English words on separate lines", cxxopts::value<std::string>())
         ("k,keylen", "preferred key length to be used by the program", cxxopts::value<uint32_t>())
         ("o,output", "output file to print out the result", cxxopts::value<std::string>()->default_value("result.txt"))
-        ("p,print", "print the decoded plain text on the screen", cxxopts::value<bool>()->default_value("false"))
+        ("p,print", "print decoded plain text on the screen", cxxopts::value<bool>()->default_value("false"))
         ("h,help", "print help")
     ;
     if (argc < 2) {
