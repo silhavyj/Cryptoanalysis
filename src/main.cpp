@@ -222,9 +222,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     std::string cipherFile(argv[1]);
-   // argv++;
-   // argc--;
-
+    
     arg = options.parse(argc, argv);
     if (arg.count("help")) {
         std::cout << options.help() << std::endl;
