@@ -1,6 +1,6 @@
 TARGET = cryptanalysis
 SUBMIT_FILE = BIT_ukol_2_jakub_silhavy.zip
-FILES_TO_SUBMIT = src words ciphers.txt Makefile README.md
+FILES_TO_SUBMIT = src words result.txt ciphers.txt Makefile README.md
 CCX    = g++
 FLAGS  = -Wall -O2 -std=c++17 -pedantic-errors -Wextra -Werror
 SRC    = src

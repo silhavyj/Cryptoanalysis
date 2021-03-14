@@ -1,6 +1,6 @@
 
 # KIV/BIT task 02 - Cryptoanalysis
-A tool from breaking substitution ciphers - Caesar cipher, Vigenere cipher, ROT13, and Mono-alphabetic. If the text has not been encrypted at all. The program will classify it as an already cracked solution.
+A tool from breaking substitution ciphers - Caesar cipher, Vigenere cipher, ROT13, and Mono-alphabetic. If the text has not been encrypted at all, the program will classify it as an already cracked solution.
 Since some of the algorithms use `rand()` function, the program may need to be run multiple times if you don't see your expected result. Particularly, this is due to the algorithm cracking Mono-alphabetic ciphers. It generates random keys and sometimes it may generate a key that does produce English words but they might not make sense. With two or three runs of the program though, you should get the expected result.
 
 ## Compilation
@@ -102,7 +102,7 @@ Once this is done for all the possible shifts, an array of coincidences may look
 However, the guessed key length 4 may not be the correct one. We need to look for all the possible patterns in the peaks, so we can then try out multiple possible options as to what the key length might be. The program defines a peak as a number greater than 1/20 of the length of the cipher text.
 
 ##### getting possible key lengths
-Using a map, the program keeps track of how often each distance between two peaks occur, so they could be sorted by their probabilities. Once the distances have been sorted, the program will find the best solution for all of the possible key lengths.
+Using a map, the program keeps track of how often each distance between two peaks occurs, so they could be sorted by their probabilities. Once the distances have been sorted, the program will find the best solution for all of the possible key lengths.
 
 #### Finding  the best solution for a specific key length
 ##### break up the cipher text into groups
@@ -145,22 +145,22 @@ std::unordered_map<std::string, double> pairScores_EN = {
 	.
 };
 ``` 
-The algorithm starts off with the key being `"abcdefghijklmnopqrstuvwxyz"`. As a first step, it will attempt to some random shuffling on the key and for each of them calculate its score based on the two-letter words occurring in the text after decryption. Within each shuffling, it will randomly swap two positions of in the key. If the key has improved, it will store it. If the key has not improved 300 times in a row, it will move on to another shuffle.
+The algorithm starts off with the key being `"abcdefghijklmnopqrstuvwxyz"`. As a first step, it will attempt to do some random shuffling on the key and for each of them calculate its score based on the two-letter words occurring in the text after decryption. Within each shuffle, it will randomly swap two characters in the key. If the key has improved, the program will store it. If the key has not improved 300 times in a row, the algorithm will move on to another shuffle.
 As an outcome, there is a key that has the highest probability of being the right key out of all the shuffles.
 `"abcdefghijklmnopqrstuvwxyz" -> "wsrqgyfonzvtijbakphdeulxcm"`. All the constants used for this are defined in `src/data.h`  
 ##### Random
 This part uses the `rand()` function which may affect the final solution. It may not always be entirely the same or it may overweight other algorithms and claim that it has come up with a better solution. This is due the randomness within the algorithm. As a solution, if you don't see your expected result, try running the program again. In up to three runs or so you should see the correct one.
-#### Second narrow down of the key
+#### Second narrow-down of the key
 As a second step, the algorithm focuses on other possible swaps of letters that could be performed on the key. Within each attempt to further improve the key, it will go over unknown words (those that have not been found in dictionary) and try to move some letters around in order to get a word that does exist in the dictionary. However, the program does not perform swap of letters on the key right away. Instead, it keeps track of how many each letter would be worth swapping with some other one. If the same pair is requested to swap more than 5 times, the swap itself will be performed. This value can be changed in `src/data.h`
 After all the swaps have been done, a new best key will be returned. If the key has indeed improved, it will replace the current one. The program keeps trying to improve the current best key until either the key has not changed or all the attempts to improve the key have been carried out.
 #### Overall evaluation
-In the end, the transformation of the key may look like this:
+In the end the transformation of the key may look like this:
 ```
 initialization:     "abcdefghijklmnopqrstuvwxyz"
 after the 1st step: "wsrqgyfonzvtijbakphdeulxcm"
 after the 2nd step: "msrqgkfonzvtijbaychdeulxpw"
 ```
-Once the cipher has been decrypted using the final key,  the same process of evaluation will be used in order to find out whether this approach overweights the other ones and could be considered as the solution.
+Once the cipher has been decrypted using the final key,  the same process of evaluation will be used in order to find out whether this approach overweights the other ones and could be considered as the final solution.
 
 ## Examples of RUN's of the program
 ### Example (1)
