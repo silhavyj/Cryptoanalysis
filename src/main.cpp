@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <unordered_set>
+#include <algorithm>
 
 #include "cxxopts.hpp"
 #include "data.h"
@@ -13,6 +14,7 @@ std::unordered_set<std::string> dictionary;
 std::string outputFile;
 std::vector<std::string> solution;
 double maxScore = 0;
+std::string solutionKey;
 
 double evaluateEnglishText(std::vector<std::string> &text, bool printUnknownWords) {
     int knownWords = 0;
@@ -128,6 +130,7 @@ void crackVigenere(const std::string &cipherText, const std::vector<std::string>
     if (score > maxScore) {
         maxScore = score;
         solution = plain;
+        solutionKey = key;
     }
     std::cout << "vigenere cipher (key length: " << keyLen << "): "; 
     std::cout << "guessed key: '" << key << "', ";
@@ -185,6 +188,153 @@ void crackVigenere(std::vector<std::string> &cipher) {
     }
 }
 
+std::string decodeMonoalphabetic(std::string cipher, std::string key) {
+    std::string plain = "";
+    for (char c : cipher) {
+        if (c == ' ')
+            plain += " ";
+        else
+            plain += std::string(1, key[c-'a']);
+    }
+    return plain;
+}
+
+double scoreMonoAlphabeticKey(std::string cipher, std::string key) {
+    double score = 0;
+    std::string plain = decodeMonoalphabetic(cipher, key);
+    for (int i = 0; i < (int)plain.length() - 2; i++) {
+        std::string pair = plain.substr(i, 2);
+        if (pairScores_EN.find(pair) != pairScores_EN.end())
+            score += pairScores_EN[pair];
+        else
+            score -= MONOALPHABETIC_MISSMATHING_SCORE;
+    }
+    return score;
+}
+
+std::pair<std::string, double> scrambleKey(std::string cipher, std::string currentKey) {
+    double currentScore = scoreMonoAlphabeticKey(cipher, currentKey);
+    int failures = 0;
+
+    while (failures < MONOALPHABETIC_ATTEMPTS_NUMBER_OF_NOT_IMPROVEMENTS) {
+        failures++;
+        int p1 = rand() % ALPHABET_SIZE;
+        int p2 = rand() % ALPHABET_SIZE;
+        
+        std::string newKey = currentKey;
+        std::swap(newKey[p1], newKey[p2]);
+        
+        double newScore = scoreMonoAlphabeticKey(cipher, newKey);
+        if (newScore > currentScore) {
+            currentScore = newScore;
+            currentKey = newKey;
+            failures = 0;
+        }
+    }
+    return {currentKey, currentScore};
+}
+
+std::string swapAllLetters(std::string text, char x, char y) {
+    for (char c : text) {
+        if (c == x) x = y;
+        if (c == y) c = x;
+    }
+    return text;
+}
+
+std::string modifyAlphabeticKey(std::string currentKey, int index, char replacement) {
+    for (int i = 0; i < ALPHABET_SIZE; i++)
+        if (currentKey[i] == replacement) {
+            std::swap(currentKey[i], currentKey[index]);
+            break;
+        }
+    return currentKey;
+}
+
+std::string refineKey(std::string cipher, std::string currentKey) {
+    std::string word = "";
+    std::string plainText = decodeMonoalphabetic(cipher, currentKey);
+
+    int replacements[ALPHABET_SIZE][ALPHABET_SIZE];
+    memset(replacements, 0, sizeof(replacements));
+
+    for (int i = 0; i < (int)plainText.length(); i++) {
+        if (plainText[i] == ' ') {
+            if (!dictionary.count(word) && word.length() > 2) {
+                for (int j = 0; j < (int)word.length(); j++) {
+                    for (int k = 0; k < ALPHABET_SIZE; k++) {
+                        std::string newWord = swapAllLetters(word, word[j], currentKey[k]);
+                        if (dictionary.count(newWord)) {
+                            replacements[word[j]-'a'][currentKey[k]-'a']++;
+                            replacements[currentKey[k]-'a'][word[j]-'a']++;
+                        }
+                    }
+                    for (int k = 0; k < ALPHABET_SIZE; k++)
+                        if (replacements[word[j]-'a'][currentKey[k]-'a'] > MONOALPHABETIC_MODIFY_KEY_THRESHOLD)
+                            return modifyAlphabeticKey(currentKey, k, word[j]);
+                }
+            }
+            word = "";
+        } else {
+            word += plainText[i];
+        }
+    }
+    return currentKey;
+}
+
+void crackMonoAlphabetic(std::vector<std::string> &cipher) {
+    std::cout << "starting cracking mono-alphabetic cipher...\n";
+    std::string cipherText = "";
+    for (std::string word : cipher)
+        cipherText += word + " ";
+    cipherText.pop_back();
+
+    std::string bestKey = "";
+    std::string monoAlphaKey = "abcdefghijklmnopqrstuvwxyz";
+    double bestScore = scoreMonoAlphabeticKey(cipherText, monoAlphaKey);
+
+    std::cout << "finding randomly the best key...\n";
+    for (int i = 0; i < MONOALPHABETIC_ATTEMPTS_TO_SCRAMBLE_KEY; i++) {
+        std::cout << "(" << (i+1) << "/" << MONOALPHABETIC_ATTEMPTS_TO_SCRAMBLE_KEY << ")..." << std::flush;
+        std::random_shuffle(monoAlphaKey.begin(), monoAlphaKey.end());
+        auto scrambled = scrambleKey(cipherText, monoAlphaKey);
+        if (scrambled.second > bestScore) {
+            bestScore = scrambled.second;
+            bestKey = scrambled.first;
+        }
+        std::cout << "DONE\n";
+    }
+    monoAlphaKey = bestKey;
+
+    std::cout << "improving the best key found...\n";
+    for (int i = 0; i < MONOALPHABETIC_ATTEMPTS_TO_REFINE_KEY; i++) {
+        std::string newKey = refineKey(cipherText, monoAlphaKey);
+        if (newKey == monoAlphaKey)
+            break;
+        monoAlphaKey = newKey;
+    }
+    std::string plainText = decodeMonoalphabetic(cipherText, monoAlphaKey);
+    std::vector<std::string> plain;
+    std::string word = "";
+
+    for (int i = 0; i < (int)plainText.length(); i++) {
+        if (plainText[i] == ' ') {
+            plain.push_back(word);
+            word = "";
+        } else {
+            word += plainText[i];
+        }
+    }
+    double score = evaluate(plain);
+    if (score > maxScore) {
+        maxScore = score;
+        solution = plain;
+        solutionKey = monoAlphaKey;
+    }
+    double percentage = evaluateEnglishText(plain, false) * 100;
+    std::cout << "dictionary words: " << percentage << "%\n";
+}
+
 void crack(std::vector<std::string> &cipher) {
     static int counter = 1;
     std::cout << "starting cracking " << counter << ". cipher...\n";
@@ -195,11 +345,22 @@ void crack(std::vector<std::string> &cipher) {
     std::cout << "the given text scores: " << maxScore << " and contains " << (evaluateEnglishText(cipher, false) * 100) << "% dictionary words\n";
 
     crackVigenere(cipher);
+    crackMonoAlphabetic(cipher);
+
+    std::cout << "------------------------------------------------------\n";
+    std::cout << "the best guess " << (evaluateEnglishText(solution, false) * 100) << "% dictionary words\n";
+    std::cout << "guessed key: "   << solutionKey << "\n";
+    std::cout << "------------------------------------------------------\n";
 
     std::ofstream out(arg["output"].as<std::string>(), std::ios::app);
-    std::cout << "plain text:\n";
+    
+    bool print = arg["print"].as<bool>();
+    if (print)
+        std::cout << "plain text:\n";
+
     for (std::string word : solution) {
-        std::cout << word << " ";
+        if (print)
+            std::cout << word << " ";
         out << word << " ";
     }
     out << "\n#\n";
@@ -208,10 +369,13 @@ void crack(std::vector<std::string> &cipher) {
 }
 
 int main(int argc, char **argv) {
+    srand(time(NULL));
+
     options.add_options()
         ("d,dictionary", "text file containing English words on separate lines", cxxopts::value<std::string>())
         ("k,keylen", "preferred key length to be used by the program", cxxopts::value<uint32_t>())
         ("o,output", "output file to print out the result", cxxopts::value<std::string>()->default_value("result.txt"))
+        ("p,print", "print the decoded plain text on the screen", cxxopts::value<bool>()->default_value("false"))
         ("h,help", "print help")
     ;
     if (argc < 2) {
