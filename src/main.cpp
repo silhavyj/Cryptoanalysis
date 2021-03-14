@@ -312,6 +312,7 @@ void crack(std::vector<std::string> &cipher) {
 
     maxScore = evaluate(cipher);
     solution = cipher;
+    solutionKey = "";
     std::cout << "the given text scores: " << maxScore << " and contains " << (evaluateEnglishText(cipher, false) * 100) << "% dictionary words\n";
 
     crackVigenere(cipher);
