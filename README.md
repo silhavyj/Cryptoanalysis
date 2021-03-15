@@ -1,6 +1,6 @@
 
 # KIV/BIT task 02 - Cryptoanalysis
-A tool from breaking substitution ciphers - Caesar cipher, Vigenere cipher, ROT13, and Mono-alphabetic. If the text has not been encrypted at all, the program will classify it as an already cracked solution.
+A tool for breaking substitution ciphers - Caesar cipher, Vigenere cipher, ROT13, and Mono-alphabetic. If the text has not been encrypted at all, the program will classify it as an already cracked solution.
 Since some of the algorithms use `rand()` function, the program may need to be run multiple times if you don't see your expected result. Particularly, this is due to the algorithm cracking Mono-alphabetic ciphers. It generates random keys and sometimes it may generate a key that does produce English words but they might not make sense. With two or three runs of the program though, you should get the expected result.
 
 ## Compilation
