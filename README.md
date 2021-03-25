@@ -28,7 +28,7 @@ Usage:
 >
 ```
 ### input
-The program takes one required parameter which happens to the the file containing different ciphers to be cracked. The ciphers are supposed to be separated by the `#` character.
+The program takes one required parameter which happens to be the file containing different ciphers to be cracked. The ciphers are supposed to be separated by the `#` character.
 ```cmd
 gibberish test 1
 #
